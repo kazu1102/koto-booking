@@ -1,28 +1,108 @@
-import {NextResponse} from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.BOOKING_NOTIFICATION_EMAILS;
-  if (!apiKey || !to) {
-    return NextResponse.json({ok:false,message:'メール通知の設定が未完了です。'}, {status:503});
+  try {
+    const gasUrl = process.env.GAS_NOTIFY_URL;
+    const gasToken = process.env.GAS_NOTIFY_TOKEN;
+
+    if (!gasUrl || !gasToken) {
+      console.error('GAS_NOTIFY_URL または GAS_NOTIFY_TOKEN が未設定です');
+
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'メール通知の設定が未完了です。'
+        },
+        { status: 503 }
+      );
+    }
+
+    const body = await request.json();
+
+    const {
+      menu,
+      price,
+      duration,
+      date,
+      time,
+      name,
+      phone,
+      email
+    } = body ?? {};
+
+    // 必須項目チェック
+    if (
+      !menu ||
+      typeof price !== 'number' ||
+      typeof duration !== 'number' ||
+      !date ||
+      !time ||
+      !name ||
+      !phone
+    ) {
+      return NextResponse.json(
+        {
+          ok: false,
+          message: '予約情報が不足しています。'
+        },
+        { status: 400 }
+      );
+    }
+
+    // GASへのPOST送信（リダイレクトを安全に追従する設定を追加）
+    const response = await fetch(gasUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8' // GASのCORS/POST制限を回避するための指定
+      },
+      redirect: 'follow', // GASのリダイレクト(302)を正しく追従
+      body: JSON.stringify({
+        token: gasToken,
+        menu,
+        price,
+        duration,
+        date,
+        time,
+        name,
+        phone,
+        email
+      })
+    });
+
+    const responseText = await response.text();
+    let result: any = {};
+    
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error('GASからのレスポンス解析失敗:', responseText);
+    }
+
+    if (!response.ok || !result.ok) {
+      console.error('GAS notification error:', result);
+
+      return NextResponse.json(
+        {
+          ok: false,
+          message: 'メール送信に失敗しました。'
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true
+    });
+
+  } catch (error) {
+    console.error('Notification error:', error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        message: 'メール通知処理でエラーが発生しました。'
+      },
+      { status: 500 }
+    );
   }
-  let body: any;
-  try { body = await request.json(); } catch { return NextResponse.json({ok:false}, {status:400}); }
-  const {menu,price,duration,date,time,name,phone,email} = body ?? {};
-  if (![menu,date,time,name,phone].every((v)=>typeof v==='string' && v.trim()) || typeof price!=='number' || typeof duration!=='number') {
-    return NextResponse.json({ok:false}, {status:400});
-  }
-  const recipients = to.split(',').map(s=>s.trim()).filter(Boolean);
-  const text = `鍼灸整体院 琴に新しい予約が入りました。\n\n日時：${date} ${time}\nメニュー：${menu}\n施術時間：${duration}分\n料金：¥${price.toLocaleString('ja-JP')}\nお名前：${name}\n電話番号：${phone}\nメールアドレス：${email || '未入力'}\n\nSupabaseの予約管理画面でも予約内容を確認してください。`;
-  const result = await fetch('https://api.resend.com/emails', {
-    method:'POST',
-    headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json'},
-    body:JSON.stringify({from:'鍼灸整体院 琴 予約通知 <onboarding@resend.dev>',to:recipients,subject:`【琴】新しい予約：${date} ${time} ${name}様`,text})
-  });
-  if (!result.ok) {
-    const details = await result.text();
-    console.error('Resend email error:', details);
-    return NextResponse.json({ok:false,message:'メール送信に失敗しました。'}, {status:502});
-  }
-  return NextResponse.json({ok:true});
 }
