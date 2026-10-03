@@ -155,48 +155,34 @@ export default function Home() {
 
   return (
     <main className="wrap" style={{ position: 'relative' }}>
-      {/* CSSアニメーションを直埋め（トコトコ歩行モーション） */}
+      {/* CSSアニメーションを定義（昔のDVDプレーヤー画面のような動き） */}
       <style>{`
-        @keyframes walkAcross {
+        /* 新しいアニメーション：壁で跳ね返る動き */
+        @keyframes walkAndBounce {
+          /* 0%: 左端（開始位置）から右向きにスタート */
           0% {
-            transform: translateX(-120px) translateY(0px);
+            transform: translateX(0px) scaleX(1); /* 向きはそのまま（右向き） */
           }
-          12.5% {
-            transform: translateX(12.5vw) translateY(-8px);
-          }
-          25% {
-            transform: translateX(25vw) translateY(0px);
-          }
-          37.5% {
-            transform: translateX(37.5vw) translateY(-8px);
-          }
+          /* 50%: 右端に到達した瞬間、跳ね返って左向きに反転 */
           50% {
-            transform: translateX(50vw) translateY(0px);
+            transform: translateX(100vw) scaleX(-1); /* 画面幅分移動、水平反転（左向き） */
           }
-          62.5% {
-            transform: translateX(62.5vw) translateY(-8px);
-          }
-          75% {
-            transform: translateX(75vw) translateY(0px);
-          }
-          87.5% {
-            transform: translateX(87.5vw) translateY(-8px);
-          }
+          /* 100%: 左端（開始位置）に戻る。向きは左向きのまま */
           100% {
-            transform: translateX(100vw) translateY(0px);
+            transform: translateX(0px) scaleX(-1); /* 開始位置へ、向きは反転したまま（左向き） */
           }
         }
 
         .koto-walking {
           position: fixed;
           bottom: 15px;
-          left: 0;
+          left: -90px; /* 初期位置を画面の左外にする */
           width: 90px;
           height: auto;
           z-index: 9999;
           pointer-events: none;
-          /* 18秒かけて横断しながらトコトコ跳ねる */
-          animation: walkAcross 18s linear infinite;
+          /* 修正：新しいアニメーション `walkAndBounce` を適用 */
+          animation: walkAndBounce 10s linear infinite; /* アニメーション時間を10秒に（往復） */
         }
       `}</style>
 
@@ -339,7 +325,7 @@ export default function Home() {
 
       <footer>© 鍼灸整体院 琴</footer>
 
-      {/* 歩行アニメーション付き画像 */}
+      {/* 跳ね返りアニメーション付き画像 */}
       <Image 
         src="/koto-walk.png" 
         alt="琴" 
