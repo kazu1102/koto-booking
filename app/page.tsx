@@ -62,7 +62,11 @@ export default function Home() {
       return;
     }
     const now = Date.now();
-    const upcoming = (data || []).filter((s: Slot) => new Date(s.starts_at).getTime() > now);
+    // 未来の時間 ＋ 1時間単位（毎時00分スタート）のスロットのみ抽出
+    const upcoming = (data || []).filter((s: Slot) => {
+      const startTime = new Date(s.starts_at);
+      return startTime.getTime() > now && startTime.getMinutes() === 0;
+    });
     setSlots(upcoming);
     setNotice('');
   }
