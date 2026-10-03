@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { supabase } from '../lib/supabase';
 
 type Menu = { id: string; name: string; duration: number; price: number; description: string };
@@ -26,6 +27,7 @@ export default function Home() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [symptom, setSymptom] = useState(''); // お悩み・症状の入力状態
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -91,6 +93,7 @@ export default function Home() {
       p_customer_name: name,
       p_phone: phone,
       p_email: email ? email.trim() : null,
+      p_symptom: symptom ? symptom.trim() : null,
     });
 
     if (error) {
@@ -123,6 +126,7 @@ export default function Home() {
           name,
           phone,
           email: email ? email.trim() : '',
+          symptom: symptom ? symptom.trim() : '',
         }),
       });
       mailSent = mailRes.ok;
@@ -142,12 +146,13 @@ export default function Home() {
     setName('');
     setPhone('');
     setEmail('');
+    setSymptom('');
     setBusy(false);
     await loadSlots();
   }
 
   return (
-    <main className="wrap">
+    <main className="wrap" style={{ position: 'relative' }}>
       <header>
         <div className="logo">
           鍼灸整体院 琴<span>KOTO ACUPUNCTURE & BODY CARE</span>
@@ -267,6 +272,16 @@ export default function Home() {
             メールアドレス（任意）
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="確認用メールアドレス" />
           </label>
+          <label>
+            お悩み・症状（任意）
+            <textarea
+              rows={3}
+              value={symptom}
+              onChange={(e) => setSymptom(e.target.value)}
+              placeholder="肩こり、腰痛、いつ頃からの症状かなどをご記入ください"
+              style={{ width: '100%', padding: '8px', marginTop: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
+            />
+          </label>
           <button className="primary" type="submit" disabled={busy}>
             {busy ? '予約処理中…' : '予約を確定する'}
           </button>
@@ -274,7 +289,18 @@ export default function Home() {
         {notice && <p className="notice">{notice}</p>}
         <p className="muted">送信いただいた情報は予約対応のために利用します。</p>
       </section>
+
       <footer>© 鍼灸整体院 琴</footer>
+
+      {/* 琴ちゃんが歩くアニメーション画像 */}
+      <Image 
+        src="/koto-walk.png" 
+        alt="琴" 
+        width={90} 
+        height={90} 
+        className="koto-walking" 
+        unoptimized
+      />
     </main>
   );
 }
