@@ -15,32 +15,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    const {
-      menu,
-      price,
-      duration,
-      date,
-      time,
-      name,
-      phone,
-      email
-    } = body ?? {};
-
-    if (
-      !menu ||
-      typeof price !== 'number' ||
-      typeof duration !== 'number' ||
-      !date ||
-      !time ||
-      !name ||
-      !phone
-    ) {
-      return NextResponse.json(
-        { ok: false, message: '予約情報が不足しています。' },
-        { status: 400 }
-      );
-    }
-
+    // GASへのPOST送信（Resendは使用せず、GAS経由でGmail送信）
     const response = await fetch(gasUrl, {
       method: 'POST',
       headers: {
@@ -49,19 +24,12 @@ export async function POST(request: Request) {
       redirect: 'follow',
       body: JSON.stringify({
         token: gasToken,
-        menu,
-        price,
-        duration,
-        date,
-        time,
-        name,
-        phone,
-        email
+        ...body
       })
     });
 
     const responseText = await response.text();
-    let result: { ok?: boolean; message?: string } = {};
+    let result: any = {};
 
     try {
       result = JSON.parse(responseText);
