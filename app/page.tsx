@@ -155,36 +155,35 @@ export default function Home() {
 
   return (
     <main className="wrap" style={{ position: 'relative' }}>
-      {/* CSSアニメーションを定義（昔のDVDプレーヤー画面のような動き） */}
-      <style>{`
-        /* 新しいアニメーション：壁で跳ね返る動き */
-        @keyframes walkAndBounce {
-          /* 0%: 左端（開始位置）から右向きにスタート */
-          0% {
-            transform: translateX(0px) scaleX(1); /* 向きはそのまま（右向き） */
-          }
-          /* 50%: 右端に到達した瞬間、跳ね返って左向きに反転 */
-          50% {
-            transform: translateX(100vw) scaleX(-1); /* 画面幅分移動、水平反転（左向き） */
-          }
-          /* 100%: 左端（開始位置）に戻る。向きは左向きのまま */
-          100% {
-            transform: translateX(0px) scaleX(-1); /* 開始位置へ、向きは反転したまま（左向き） */
-          }
-        }
+      {/* dangerouslySetInnerHTML を使用してビルドエラーを回避 */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes walkAndBounce {
+              0% {
+                transform: translateX(0px) scaleX(1);
+              }
+              50% {
+                transform: translateX(calc(100vw - 90px)) scaleX(-1);
+              }
+              100% {
+                transform: translateX(0px) scaleX(1);
+              }
+            }
 
-        .koto-walking {
-          position: fixed;
-          bottom: 15px;
-          left: -90px; /* 初期位置を画面の左外にする */
-          width: 90px;
-          height: auto;
-          z-index: 9999;
-          pointer-events: none;
-          /* 修正：新しいアニメーション `walkAndBounce` を適用 */
-          animation: walkAndBounce 10s linear infinite; /* アニメーション時間を10秒に（往復） */
-        }
-      `}</style>
+            .koto-walking {
+              position: fixed;
+              bottom: 15px;
+              left: 0;
+              width: 90px;
+              height: auto;
+              z-index: 9999;
+              pointer-events: none;
+              animation: walkAndBounce 10s linear infinite;
+            }
+          `,
+        }}
+      />
 
       <header>
         <div className="logo">
