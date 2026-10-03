@@ -30,6 +30,10 @@ export default function Home() {
   const [symptom, setSymptom] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  
+  // 予約完了画面（モーダル/完了画面）制御用のステート
+  const [isBooked, setIsBooked] = useState(false);
+  const [bookedDetails, setBookedDetails] = useState<{ date: string; time: string; menuName: string; name: string } | null>(null);
 
   const calendarDays = useMemo(() => {
     const first = new Date(Date.UTC(month.year, month.month, 1));
@@ -110,9 +114,14 @@ export default function Home() {
       return;
     }
 
-    let mailSent = false;
+    const timeText = new Date(chosen.starts_at).toLocaleTimeString('ja-JP', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Tokyo',
+    });
+
     try {
-      const mailRes = await fetch('/api/notify', {
+      await fetch('/api/notify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -120,30 +129,27 @@ export default function Home() {
           price: menu.price,
           duration: menu.duration,
           date,
-          time: new Date(chosen.starts_at).toLocaleTimeString('ja-JP', {
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Asia/Tokyo',
-          }),
+          time: timeText,
           name,
           phone,
           email: email ? email.trim() : '',
           symptom: symptom ? symptom.trim() : '',
         }),
       });
-      mailSent = mailRes.ok;
-      if (!mailRes.ok) {
-        console.error('通知APIレスポンスエラー:', await mailRes.text());
-      }
     } catch (e) {
       console.error('通知API送信失敗:', e);
     }
 
-    setNotice(
-      mailSent
-        ? 'ご予約を受け付けました。院への予約通知メールも送信しました。'
-        : 'ご予約を受け付けました。予約通知メールは未設定または送信できていません。院で予約一覧をご確認ください。'
-    );
+    // 予約完了情報のセットと完了画面表示フラグのON
+    setBookedDetails({
+      date: date.replaceAll('-', '/'),
+      time: timeText,
+      menuName: menu.name,
+      name,
+    });
+    setIsBooked(true);
+
+    // フォームのクリアと処理状態解除
     setSlot('');
     setName('');
     setPhone('');
@@ -151,6 +157,65 @@ export default function Home() {
     setSymptom('');
     setBusy(false);
     await loadSlots();
+  }
+
+  // ★ 予約完了画面を表示
+  if (isBooked && bookedDetails) {
+    return (
+      <main className="wrap">
+        <header>
+          <div className="logo">
+            鍼灸整体院 琴<span>KOTO ACUPUNCTURE & BODY CARE</span>
+          </div>
+          <div className="hours">毎日 10:00–20:00</div>
+        </header>
+
+        <section className="card" style={{ textAlign: 'center', padding: '40px 20px' }}>
+          <h1 style={{ fontSize: '1.8rem', color: '#2b5840', marginBottom: '16px' }}>
+            🎉 ご予約が完了いたしました
+          </h1>
+          <p style={{ fontSize: '1.1rem', marginBottom: '24px', lineHeight: '1.6' }}>
+            <strong>{bookedDetails.name}</strong> 様<br />
+            ご予約ありがとうございます。
+          </p>
+
+          <div
+            style={{
+              background: '#f8f9fa',
+              padding: '20px',
+              borderRadius: '8px',
+              textAlign: 'left',
+              margin: '0 auto 24px',
+              maxWidth: '400px',
+              border: '1px solid #e9ecef',
+            }}
+          >
+            <p style={{ margin: '6px 0' }}>
+              <strong>日時：</strong> {bookedDetails.date} {bookedDetails.time}〜
+            </p>
+            <p style={{ margin: '6px 0' }}>
+              <strong>メニュー：</strong> {bookedDetails.menuName}
+            </p>
+          </div>
+
+          <p className="muted" style={{ fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '24px' }}>
+            ※メールアドレスをご入力いただいた場合は、確認通知をお送りしております。<br />
+            ※ご予約の変更・キャンセルはお電話または公式LINEよりご連絡ください。
+          </p>
+
+          <button
+            type="button"
+            className="primary"
+            onClick={() => setIsBooked(false)}
+            style={{ padding: '12px 32px', fontSize: '1rem', cursor: 'pointer' }}
+          >
+            トップページへ戻る
+          </button>
+        </section>
+
+        <footer>© 鍼灸整体院 琴</footer>
+      </main>
+    );
   }
 
   return (
