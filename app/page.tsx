@@ -155,31 +155,40 @@ export default function Home() {
 
   return (
     <main className="wrap" style={{ position: 'relative' }}>
-      {/* dangerouslySetInnerHTML を使用してビルドエラーを回避 */}
+      {/* 2つのアニメーションを組み合わせてDVD風の斜めバウンドを再現 */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
-            @keyframes walkAndBounce {
-              0% {
-                transform: translateX(0px) scaleX(1);
+            /* 横方向のバウンド (左右の壁) */
+            @keyframes bounceX {
+              0%, 100% {
+                left: 0px;
               }
               50% {
-                transform: translateX(calc(100vw - 90px)) scaleX(-1);
+                left: calc(100vw - 90px);
               }
-              100% {
-                transform: translateX(0px) scaleX(1);
+            }
+
+            /* 縦方向のバウンド (上下の壁) */
+            @keyframes bounceY {
+              0%, 100% {
+                top: 0px;
+              }
+              50% {
+                top: calc(100vh - 90px);
               }
             }
 
             .koto-walking {
               position: fixed;
-              bottom: 15px;
-              left: 0;
               width: 90px;
               height: auto;
               z-index: 9999;
               pointer-events: none;
-              animation: walkAndBounce 10s linear infinite;
+              /* 横方向(11.3秒)と縦方向(8.7秒)の秒数をずらすことで、斜めにランダムに跳ね回る */
+              animation: 
+                bounceX 11.3s linear infinite alternate,
+                bounceY 8.7s linear infinite alternate;
             }
           `,
         }}
@@ -324,7 +333,7 @@ export default function Home() {
 
       <footer>© 鍼灸整体院 琴</footer>
 
-      {/* 跳ね返りアニメーション付き画像 */}
+      {/* 斜めバウンドアニメーション付き画像 */}
       <Image 
         src="/koto-walk.png" 
         alt="琴" 
