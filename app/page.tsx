@@ -27,7 +27,7 @@ export default function Home() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [symptom, setSymptom] = useState(''); // お悩み・症状の入力状態
+  const [symptom, setSymptom] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -86,7 +86,6 @@ export default function Home() {
     }
     setBusy(true);
 
-    // 1. Supabaseへ予約登録
     const { data, error } = await supabase.rpc('book_appointment', {
       p_slot_id: slot,
       p_menu_id: menu.id,
@@ -107,7 +106,6 @@ export default function Home() {
       return;
     }
 
-    // 2. 通知API呼び出し
     let mailSent = false;
     try {
       const mailRes = await fetch('/api/notify', {
@@ -153,6 +151,24 @@ export default function Home() {
 
   return (
     <main className="wrap" style={{ position: 'relative' }}>
+      {/* CSSアニメーションを直埋め（globals.css不要） */}
+      <style>{`
+        @keyframes walkAcross {
+          0% { transform: translateX(-120px); }
+          100% { transform: translateX(100vw); }
+        }
+        .koto-walking {
+          position: fixed;
+          bottom: 15px;
+          left: 0;
+          width: 90px;
+          height: auto;
+          z-index: 9999;
+          pointer-events: none;
+          animation: walkAcross 18s linear infinite;
+        }
+      `}</style>
+
       <header>
         <div className="logo">
           鍼灸整体院 琴<span>KOTO ACUPUNCTURE & BODY CARE</span>
@@ -292,7 +308,7 @@ export default function Home() {
 
       <footer>© 鍼灸整体院 琴</footer>
 
-      {/* 琴ちゃんが歩くアニメーション画像 */}
+      {/* 琴ちゃん画像 */}
       <Image 
         src="/koto-walk.png" 
         alt="琴" 
