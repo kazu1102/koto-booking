@@ -151,12 +151,38 @@ export default function Home() {
 
   return (
     <main className="wrap" style={{ position: 'relative' }}>
-      {/* CSSアニメーションを直埋め（globals.css不要） */}
+      {/* CSSアニメーションを直埋め（トコトコ歩行モーション） */}
       <style>{`
         @keyframes walkAcross {
-          0% { transform: translateX(-120px); }
-          100% { transform: translateX(100vw); }
+          0% {
+            transform: translateX(-120px) translateY(0px);
+          }
+          12.5% {
+            transform: translateX(12.5vw) translateY(-8px);
+          }
+          25% {
+            transform: translateX(25vw) translateY(0px);
+          }
+          37.5% {
+            transform: translateX(37.5vw) translateY(-8px);
+          }
+          50% {
+            transform: translateX(50vw) translateY(0px);
+          }
+          62.5% {
+            transform: translateX(62.5vw) translateY(-8px);
+          }
+          75% {
+            transform: translateX(75vw) translateY(0px);
+          }
+          87.5% {
+            transform: translateX(87.5vw) translateY(-8px);
+          }
+          100% {
+            transform: translateX(100vw) translateY(0px);
+          }
         }
+
         .koto-walking {
           position: fixed;
           bottom: 15px;
@@ -165,6 +191,7 @@ export default function Home() {
           height: auto;
           z-index: 9999;
           pointer-events: none;
+          /* 18秒かけて横断しながらトコトコ跳ねる */
           animation: walkAcross 18s linear infinite;
         }
       `}</style>
@@ -308,7 +335,7 @@ export default function Home() {
 
       <footer>© 鍼灸整体院 琴</footer>
 
-      {/* 琴ちゃん画像 */}
+      {/* 歩行アニメーション付き画像 */}
       <Image 
         src="/koto-walk.png" 
         alt="琴" 
