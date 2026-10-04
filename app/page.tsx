@@ -31,7 +31,6 @@ export default function Home() {
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   
-  // 予約完了画面（モーダル/完了画面）制御用のステート
   const [isBooked, setIsBooked] = useState(false);
   const [bookedDetails, setBookedDetails] = useState<{ date: string; time: string; menuName: string; name: string } | null>(null);
 
@@ -66,7 +65,6 @@ export default function Home() {
       return;
     }
     const now = Date.now();
-    // 未来の時間 ＋ 1時間単位（毎時00分スタート）のスロットのみ抽出
     const upcoming = (data || []).filter((s: Slot) => {
       const startTime = new Date(s.starts_at);
       return startTime.getTime() > now && startTime.getMinutes() === 0;
@@ -140,7 +138,6 @@ export default function Home() {
       console.error('通知API送信失敗:', e);
     }
 
-    // 予約完了情報のセットと完了画面表示フラグのON
     setBookedDetails({
       date: date.replaceAll('-', '/'),
       time: timeText,
@@ -149,7 +146,6 @@ export default function Home() {
     });
     setIsBooked(true);
 
-    // フォームのクリアと処理状態解除
     setSlot('');
     setName('');
     setPhone('');
@@ -159,7 +155,6 @@ export default function Home() {
     await loadSlots();
   }
 
-  // ★ 予約完了画面を表示
   if (isBooked && bookedDetails) {
     return (
       <main className="wrap">
@@ -220,10 +215,59 @@ export default function Home() {
 
   return (
     <main className="wrap" style={{ position: 'relative' }}>
-      {/* 2つのアニメーションを組み合わせてDVD風の斜めバウンドを再現 */}
+      {/* ========================================================== */}
+      {/* 背景用のうっすら見える竹イラスト（3箇所に配置）               */}
+      {/* ========================================================== */}
+      <div className="bamboo-bg bamboo-right-bottom" style={{ backgroundImage: "url('/bamboo.png')" }} />
+      <div className="bamboo-bg bamboo-left-top bamboo-flipped" style={{ backgroundImage: "url('/bamboo.png')" }} />
+      <div className="bamboo-bg bamboo-middle-right" style={{ backgroundImage: "url('/bamboo.png')" }} />
+
       <style
         dangerouslySetInnerHTML={{
           __html: `
+            /* 竹イラスト（背景）の共通スタイル */
+            .bamboo-bg {
+              position: fixed;
+              pointer-events: none; /* マウス操作を透過 */
+              opacity: 0.08; /* うっすら見える（透過度8%） */
+              z-index: 0; /* 背面に配置 */
+              background-size: contain;
+              background-repeat: no-repeat;
+            }
+            
+            /* 個別の配置設定 */
+            .bamboo-right-bottom {
+              bottom: -20px;
+              right: -20px;
+              width: 280px;
+              height: 380px;
+              background-position: bottom right;
+            }
+            .bamboo-left-top {
+              top: 40px;
+              left: -20px;
+              width: 220px;
+              height: 300px;
+              background-position: top left;
+            }
+            .bamboo-middle-right {
+              top: 45%;
+              right: 10px;
+              width: 180px;
+              height: 240px;
+              opacity: 0.05; /* さらに薄く */
+              background-position: center right;
+            }
+            
+            /* 画像を左右反転させるクラス */
+            .bamboo-flipped {
+              transform: scaleX(-1);
+            }
+
+            /* ========================================================== */
+            /* 以下、既存のDVD風バウンドアニメーションとスタイルの設定       */
+            /* ========================================================== */
+
             /* 横方向のバウンド (左右の壁) */
             @keyframes bounceX {
               0%, 100% {
@@ -398,7 +442,7 @@ export default function Home() {
 
       <footer>© 鍼灸整体院 琴</footer>
 
-      {/* 斜めバウンドアニメーション付き画像 */}
+      {/* 斜めバウンドアニメーション付き画像（琴ちゃん） */}
       <Image 
         src="/koto-walk.png" 
         alt="琴" 
