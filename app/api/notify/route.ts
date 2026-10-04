@@ -55,10 +55,15 @@ ${symptom ? `【お悩み・症状】\n${symptom}\n` : ''}
       });
     }
 
-    // 2. 院（管理者）宛ての予約通知メール
+    // 2. 院（管理者）宛ての予約通知メール（あなたとけんたさんの両方に送信）
+    const adminEmails = [
+      process.env.GMAIL_USER,
+      'sinkyuseitaikoto@gmail.com' // ★ここをけんたさんの実際のメアドに変更してください
+    ].filter(Boolean);
+
     await transporter.sendMail({
       from: `"予約通知システム" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER, // 管理者のGmailアドレス
+      to: adminEmails.join(','), // カンマ区切りで複数人に同時送信
       subject: `【新規予約】${name} 様 (${date} ${time})`,
       text: `Web予約サイトから新しい予約が入りました。\n\n${emailContent}`,
     });
